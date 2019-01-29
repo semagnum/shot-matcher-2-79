@@ -1,13 +1,11 @@
 bl_info = {
-    "name": "Color Matching",
+    "name": "Aspect Ratio Calculator",
     "author": "Spencer Magnusson",
     "version": (0, 1),
     "blender": (2, 79, 0),
-    "description": "Analyzes colors of an image and applies it to the compositing tree.",
-    "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Node"
+    "description": "Calculates and Generates Settings for Specific Aspect Ratio",
+    "support": "COMMUNITY",
+    "category": "Render"
 }
 
 import bpy
