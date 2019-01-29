@@ -19,9 +19,9 @@ class CMR_OT_color_reset(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
-        context.scene.max_color = (1.0, 1.0, 1.0)
+        context.scene.max_color = (0.0, 0.0, 0.0)
         context.scene.midtone_color = (0.5, 0.5, 0.5)
-        context.scene.min_color = (0.0, 0.0, 0.0)
+        context.scene.min_color = (1.0, 1.0, 1.0)
         return {'FINISHED'}
         
 class CMC_OT_image_calculator(bpy.types.Operator):
@@ -89,21 +89,12 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
 class CMP_OT_color_picker(bpy.types.Operator):
     bl_idname = "image.cmp_ot_color_picker"
     bl_label = "Min Max Color Picker"
-    
-    min_rgb = bpy.props.FloatVectorProperty(
-        default=(1.0, 1.0, 1.0),
-        min=0.0,
-        precision=4,
-        subtype='COLOR')
-    max_rgb = bpy.props.FloatVectorProperty(
-        default=(0.0, 0.0, 0.0),
-        min=0.0,
-        precision=4,
-        subtype='COLOR')
-
 
     def modal(self, context, event):
         context.area.tag_redraw()
+        
+        min_rgb = context.scene.min_color
+        max_rgb = context.scene.max_color
         
         context.area.header_text_set("LMB: pick max/min colors, RMB: finish and apply, ESC: cancel")
         
@@ -126,27 +117,27 @@ class CMP_OT_color_picker(bpy.types.Operator):
                 pixels = img.pixels[offset:offset+3]
 
                 #check max for each channel
-                if pixels[0] > self.max_rgb[0]:
-                    self.max_rgb[0] = pixels[0]
-                if pixels[1] > self.max_rgb[1]:
-                    self.max_rgb[1] = pixels[1]
-                if pixels[2] > self.max_rgb[2]:
-                    self.max_rgb[2] = pixels[2]
+                if pixels[0] > max_rgb[0]:
+                    max_rgb[0] = pixels[0]
+                if pixels[1] > max_rgb[1]:
+                    max_rgb[1] = pixels[1]
+                if pixels[2] > max_rgb[2]:
+                    max_rgb[2] = pixels[2]
                 
                 #check min for each channel
-                if pixels[0] < self.min_rgb[0]:
-                    self.min_rgb[0] = pixels[0]
-                if pixels[1] < self.min_rgb[1]:
-                    self.min_rgb[1] = pixels[1]
-                if pixels[2] < self.min_rgb[2]:
-                    self.min_rgb[2] = pixels[2]
+                if pixels[0] < min_rgb[0]:
+                    min_rgb[0] = pixels[0]
+                if pixels[1] < min_rgb[1]:
+                    min_rgb[1] = pixels[1]
+                if pixels[2] < min_rgb[2]:
+                    min_rgb[2] = pixels[2]
             
         elif event.type == 'LEFTMOUSE':
             self.lmb = (event.value == 'PRESS')
             
         elif event.type in {'RIGHTMOUSE'}:
-            context.scene.min_color = self.min_rgb
-            context.scene.max_color = self.max_rgb
+            context.scene.min_color = min_rgb
+            context.scene.max_color = max_rgb
             context.area.header_text_set()
             return {'FINISHED'}
         
@@ -187,7 +178,7 @@ class CMP_PT_color_matching(bpy.types.Panel):
         row.operator(CMC_OT_image_calculator.bl_idname, text = 'Calculate Picture', icon='SEQ_HISTOGRAM')
         row = layout.row()
         row.operator(CMP_OT_color_picker.bl_idname, text = 'Max/Min Color Picker', icon='EYEDROPPER')
-        row.operator(CMR_OT_color_reset.bl_idname, text = 'Reset', icon='IMAGE_ALPHA')
+        row.operator(CMR_OT_color_reset.bl_idname, text = 'Reset Color Picker', icon='IMAGE_ALPHA')
         layout.operator(CMN_OT_add_color_matching_node.bl_idname, text = 'Add to Compositor', icon='NODETREE')
         
         
