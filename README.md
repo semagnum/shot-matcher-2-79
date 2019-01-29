@@ -1,6 +1,6 @@
 # Blender Color Matching Addon
 
-All the controls for this addon can be found in the UV editor window.
+The purpose of this addon is to speed up the compositing workflow with color matching analysis and calculating.  This can then be implemented into the compositor.  All the controls for this addon can be found in the UV editor window on the right shelf (click "n" if the shelf isn't visible).
 
 # Calculate Picture
 This simply takes the white, midtone, and black RGB values for the selected image.  It's a good start, but keep in mind that heavily saturated colors can throw off the calculation.  For example, if the image's black pixels are RGB(0.1, 0.1, 0.1), but there's a heavily saturated red pixel with a RGB(0.99, 0.01, 0.01), the calculated min color will be RGB (0.1, 0.01, 0.01), which technically isn't the black value.  That's where the color picker comes in.
