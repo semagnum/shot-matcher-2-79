@@ -30,7 +30,10 @@ class CMC_OT_image_calculator(bpy.types.Operator):
     bl_label = "Image Calculator"
     bl_options = {'REGISTER'}
     
-    def execute(self, context):   
+    def execute(self, context):
+        
+        bpy.context.window.cursor_set("WAIT")
+          
         current_img = bpy.context.edit_image 
         pixels = current_img.pixels[:] # create a copy (tuple) for read-only access
         
@@ -59,6 +62,7 @@ class CMC_OT_image_calculator(bpy.types.Operator):
         context.scene.max_color = (max_r, max_g, max_b)
         context.scene.min_color = (min_r, min_g, min_b)
         
+        bpy.context.window.cursor_set("DEFAULT")
         
         return {'FINISHED'}
     
@@ -92,6 +96,8 @@ class CMP_OT_color_picker(bpy.types.Operator):
     bl_label = "Min Max Color Picker"
 
     def modal(self, context, event):
+        
+        bpy.context.window.cursor_set("EYEDROPPER")
 
         context.area.header_text_set("LMB: pick max/min colors, RMB: finish and apply, ESC: cancel")
         
@@ -134,8 +140,10 @@ class CMP_OT_color_picker(bpy.types.Operator):
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
             context.scene.max_color = (self.max_r, self.max_g, self.max_b)
             context.area.header_text_set()
+            bpy.context.window.cursor_set("DEFAULT")
             return {'FINISHED'}
         elif event.type == 'ESC':
+            bpy.context.window.cursor_set("DEFAULT")
             context.area.header_text_set()
             return {'FINISHED'}
         
