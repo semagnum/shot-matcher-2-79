@@ -30,6 +30,10 @@ class CMC_OT_image_calculator(bpy.types.Operator):
     bl_label = "Image Calculator"
     bl_options = {'REGISTER'}
     
+    @classmethod
+    def poll(cls, context):
+        return bpy.context.edit_image is not None
+    
     def execute(self, context):
         
         bpy.context.window.cursor_set("WAIT")
@@ -54,11 +58,12 @@ class CMC_OT_image_calculator(bpy.types.Operator):
         min_g = min(ch_g)
         min_b = min(ch_b)
         
-        midtone_r = median(ch_r)
+        #disable midtone since not usable at the moment
+        '''midtone_r = median(ch_r)
         midtone_g = median(ch_g)
         midtone_b = median(ch_b)
+        context.scene.midtone_color = (midtone_r, midtone_g, midtone_b)'''
         
-        context.scene.midtone_color = (midtone_r, midtone_g, midtone_b)
         context.scene.max_color = (max_r, max_g, max_b)
         context.scene.min_color = (min_r, min_g, min_b)
         
@@ -94,6 +99,10 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
 class CMP_OT_color_picker(bpy.types.Operator):
     bl_idname = "image.cmp_ot_color_picker"
     bl_label = "Min Max Color Picker"
+    
+    @classmethod
+    def poll(cls, context):
+        return bpy.context.edit_image is not None
 
     def modal(self, context, event):
         
@@ -158,7 +167,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
         self.max_g = context.scene.max_color[1]
         self.max_b = context.scene.max_color[2]
         
-        if context.area.type == 'IMAGE_EDITOR':
+        if context.area.type == 'IMAGE_EDITOR' and bpy.context.edit_image is not None:
             context.window_manager.modal_handler_add(self)
             return {'RUNNING_MODAL'}
         else:
@@ -176,7 +185,7 @@ class CMP_PT_color_matching(bpy.types.Panel):
         
         layout = self.layout
         layout.prop(context.scene, "max_color", text='Max Color')
-        layout.prop(context.scene, "midtone_color", text='Midtone Color')
+        #layout.prop(context.scene, "midtone_color", text='Midtone Color')
         layout.prop(context.scene, "min_color", text='Min Color')
         
         row = layout.row()
@@ -198,11 +207,12 @@ def register():
         min=0.0,
         precision=4,
         subtype='COLOR')
-    bpy.types.Scene.midtone_color = bpy.props.FloatVectorProperty(
+    #midtone not usable at the moment
+    '''bpy.types.Scene.midtone_color = bpy.props.FloatVectorProperty(
         default=(0.5, 0.5, 0.5),
         min=0.0,
         precision=4,
-        subtype='COLOR')
+        subtype='COLOR')'''
     bpy.types.Scene.max_color = bpy.props.FloatVectorProperty(
         default=(1.0, 1.0, 1.0),
         min=0.0,
