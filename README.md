@@ -16,4 +16,4 @@ This is for your color picker, in case you accidentally pick an area that will t
 # Add to Compositor
 Adds a color balance node to your compositor, applying the black and white values you just calculated or picked!
 
-Note: the midtone color isn't applied to the color balance node.
+Note: the midtone color isn't directly correlated to the power setting of the color balance node, so it's not applied.  However, you can tweak the power color to your liking to match the contrast.
