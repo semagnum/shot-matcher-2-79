@@ -21,7 +21,7 @@ class CMR_OT_color_reset(bpy.types.Operator):
     
     def execute(self, context):
         context.scene.max_color = (0.0, 0.0, 0.0)
-        context.scene.midtone_color = (0.5, 0.5, 0.5)
+        #context.scene.midtone_color = (0.5, 0.5, 0.5)
         context.scene.min_color = (1.0, 1.0, 1.0)
         return {'FINISHED'}
         
