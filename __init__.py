@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Color Matching Analyzer",
     "author": "Spencer Magnusson",
-    "version": (0, 1),
+    "version": (0, 5),
     "blender": (2, 79, 0),
     "description": "Analyzes colors of an image and applies it to the compositing tree.",
     "warning": "",
@@ -99,6 +99,7 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
 class CMP_OT_color_picker(bpy.types.Operator):
     bl_idname = "image.cmp_ot_color_picker"
     bl_label = "Min Max Color Picker"
+
     
     @classmethod
     def poll(cls, context):
@@ -108,44 +109,35 @@ class CMP_OT_color_picker(bpy.types.Operator):
         
         bpy.context.window.cursor_set("EYEDROPPER")
 
-        context.area.header_text_set("LMB: pick max/min colors, RMB: finish and apply, ESC: cancel")
+        context.area.header_text_set("Ctrl + Mouse: pick max/min colors, LMB/RMB: finish and apply, ESC: cancel")
         
-        if event.type == 'LEFTMOUSE':
-            self.lmb = (event.value == 'PRESS')    
-        elif event.type == 'MOUSEMOVE':
-            if self.lmb:
+        if event.type == 'MOUSEMOVE':
+            if event.ctrl:
+                print("pick")
                 mouse_x = event.mouse_x - context.region.x
                 mouse_y = event.mouse_y - context.region.y
-
-
                 uv = context.area.regions[-1].view2d.region_to_view(mouse_x, mouse_y)
                 img = bpy.context.edit_image
                 size_x, size_y = img.size[:]
-
-
                 x = int(size_x * uv[0]) % size_x
                 y = int(size_y * uv[1]) % size_y
-
-
                 offset = (y * size_x + x) * 4
                 pixels = img.pixels[offset:offset+3]
-
                 #check max for each channel
                 if pixels[0] > self.max_r:
                     self.max_r = pixels[0]
                 if pixels[1] > self.max_g:
                     self.max_g = pixels[1]
                 if pixels[2] > self.max_b:
-                    self.max_b = pixels[2]
-                
+                    self.max_b = pixels[2]                
                 #check min for each channel
                 if pixels[0] < self.min_r:
                     self.min_r = pixels[0]
                 if pixels[1] < self.min_g:
                     self.min_g = pixels[1]
                 if pixels[2] < self.min_b:
-                    self.min_b = pixels[2]    
-        elif event.type == 'RIGHTMOUSE':
+                    self.min_b = pixels[2]        
+        elif event.type in {'RIGHTMOUSE', 'LEFTMOUSE'}:
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
             context.scene.max_color = (self.max_r, self.max_g, self.max_b)
             context.area.header_text_set()
@@ -159,7 +151,6 @@ class CMP_OT_color_picker(bpy.types.Operator):
         return {'PASS_THROUGH'}
     
     def invoke(self, context, event):
-        self.lmb = False
         self.min_r = context.scene.min_color[0]
         self.min_g = context.scene.min_color[1]
         self.min_b = context.scene.min_color[2]
@@ -178,7 +169,7 @@ class CMP_PT_color_matching(bpy.types.Panel):
     bl_idname = "image.cmp_pt_color_matching"
     bl_space_type = 'IMAGE_EDITOR'
     bl_label = "Color-Matching Analysis"
-    bl_category = "B-VFX"
+    bl_category = "Color-Matching"
     bl_region_type = 'UI'
     
     def draw(self, context):
@@ -229,8 +220,5 @@ def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
-
-# This allows you to run the script directly from blenders text editor
-# to test the addon without having to install it.
 if __name__ == "__main__":
     register()
