@@ -32,13 +32,13 @@ class CMC_OT_image_calculator(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return bpy.context.edit_image is not None
+        return context.edit_image is not None
     
     def execute(self, context):
         
-        bpy.context.window.cursor_set("WAIT")
+        context.window.cursor_set("WAIT")
           
-        current_img = bpy.context.edit_image 
+        current_img = context.edit_image 
         pixels = current_img.pixels[:] # create a copy (tuple) for read-only access
         
         #slice the pixels into the RGB channels
@@ -67,7 +67,7 @@ class CMC_OT_image_calculator(bpy.types.Operator):
         context.scene.max_color = (max_r, max_g, max_b)
         context.scene.min_color = (min_r, min_g, min_b)
         
-        bpy.context.window.cursor_set("DEFAULT")
+        context.window.cursor_set("DEFAULT")
         
         return {'FINISHED'}
     
@@ -76,23 +76,66 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
     bl_label = "Add Min/Max Color Balance to Compositor"
     bl_options = {'REGISTER'}
     
+    @classmethod
+    def poll(cls, context):
+        return context.edit_image is not None
+    
     def execute(self, context):
-        bpy.context.scene.use_nodes = True
-        tree = bpy.context.scene.node_tree
+        context.scene.use_nodes = True
+        tree = context.scene.node_tree
         
+        #create color balance node
         node_label = "Color-Matched Color Balance"
-        color_node = None
+        color_node = tree.nodes.get(node_label)
 
-        if not node_label in [node.label for node in tree.nodes]:
+        if color_node is None:
             color_node = tree.nodes.new(type='CompositorNodeColorBalance')
             color_node.label = node_label
             color_node.name = node_label
-        else:
-            color_node = tree.nodes.get(node_label)
             
         color_node.correction_method = 'OFFSET_POWER_SLOPE'
         color_node.offset = context.scene.min_color
         color_node.slope = context.scene.max_color - context.scene.min_color
+        
+        image_node_label = "Selected Background Image" 
+        image_node = tree.nodes.get(image_node_label)
+        
+        #create image texture node
+        if image_node is None:
+            image_node = tree.nodes.new(type="CompositorNodeImage")
+            image_node.name = image_node_label
+            image_node.label = image_node_label
+            image_node.location = 100, 400
+        
+        image_node.image = bpy.data.images[context.edit_image.name]
+        
+        #create alpha over node
+        alpha_over_node_label = "BG/Render Alpha Over" 
+        alpha_over_node = tree.nodes.get(alpha_over_node_label)
+        
+        if alpha_over_node is None:
+            alpha_over_node = tree.nodes.new(type="CompositorNodeAlphaOver")
+            alpha_over_node.name = alpha_over_node_label
+            alpha_over_node.label = alpha_over_node_label
+            alpha_over_node.location = 600, 200
+            alpha_over_node.use_premultiply = True
+            
+        #create/get composite node
+        comp_node = tree.nodes.get("Composite")
+        
+        if comp_node is None:
+            comp_node = tree.nodes.new(type="CompositorNodeComposite")
+            comp_node.location = 1000, 150
+            
+        #bring it all together
+        tree.links.new(image_node.outputs[0], alpha_over_node.inputs[1])
+        tree.links.new(color_node.outputs[0], alpha_over_node.inputs[2])
+        tree.links.new(alpha_over_node.outputs[0], comp_node.inputs[0])
+        
+        #switch views
+        context.area.type = 'NODE_EDITOR'
+        context.space_data.tree_type = 'CompositorNodeTree'
+
         
         return {'FINISHED'}
     
@@ -103,11 +146,11 @@ class CMP_OT_color_picker(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return bpy.context.edit_image is not None
+        return context.edit_image is not None
 
     def modal(self, context, event):
         
-        bpy.context.window.cursor_set("EYEDROPPER")
+        context.window.cursor_set("EYEDROPPER")
 
         context.area.header_text_set("Ctrl + Mouse: pick max/min colors, LMB/RMB: finish and apply, ESC: cancel")
         
@@ -117,7 +160,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
                 mouse_x = event.mouse_x - context.region.x
                 mouse_y = event.mouse_y - context.region.y
                 uv = context.area.regions[-1].view2d.region_to_view(mouse_x, mouse_y)
-                img = bpy.context.edit_image
+                img = context.edit_image
                 size_x, size_y = img.size[:]
                 x = int(size_x * uv[0]) % size_x
                 y = int(size_y * uv[1]) % size_y
@@ -141,10 +184,10 @@ class CMP_OT_color_picker(bpy.types.Operator):
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
             context.scene.max_color = (self.max_r, self.max_g, self.max_b)
             context.area.header_text_set()
-            bpy.context.window.cursor_set("DEFAULT")
+            context.window.cursor_set("DEFAULT")
             return {'FINISHED'}
         elif event.type == 'ESC':
-            bpy.context.window.cursor_set("DEFAULT")
+            context.window.cursor_set("DEFAULT")
             context.area.header_text_set()
             return {'FINISHED'}
         
@@ -158,7 +201,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
         self.max_g = context.scene.max_color[1]
         self.max_b = context.scene.max_color[2]
         
-        if context.area.type == 'IMAGE_EDITOR' and bpy.context.edit_image is not None:
+        if context.area.type == 'IMAGE_EDITOR' and context.edit_image is not None:
             context.window_manager.modal_handler_add(self)
             return {'RUNNING_MODAL'}
         else:
@@ -218,7 +261,7 @@ def unregister():
     del bpy.types.Scene.min_color, bpy.types.Scene.max_color
     
     for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+        utils.unregister_class(cls)
 
 if __name__ == "__main__":
     register()
