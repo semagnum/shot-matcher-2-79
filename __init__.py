@@ -78,59 +78,48 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return context.edit_image is not None
+        return context.edit_image is not None and context.scene.use_nodes
     
     def execute(self, context):
-        context.scene.use_nodes = True
-        tree = context.scene.node_tree
         
-        #create color balance node
-        node_label = "Color-Matched Color Balance"
-        color_node = tree.nodes.get(node_label)
+        # create a group
+        image_merge_group = bpy.data.node_groups.get("Image Merge: " + context.edit_image.name)
+        
+        if image_merge_group is None:
+            image_merge_group = bpy.data.node_groups.new(type="CompositorNodeTree", name="Image Merge: " + context.edit_image.name)
+            # create group inputs
+            image_merge_group.inputs.new("NodeSocketColor","Background")
+            image_merge_group.inputs.new("NodeSocketColor","Foreground")
+            group_inputs = image_merge_group.nodes.new('NodeGroupInput')
+            group_inputs.location = (-250,0)
+            # create group outputs
+            image_merge_group.outputs.new('NodeSocketColor','Image')
+            group_outputs = image_merge_group.nodes.new('NodeGroupOutput')
+            group_outputs.location = (900,0)        
+            #create color balance node
+            color_node = image_merge_group.nodes.new(type='CompositorNodeColorBalance')              
+            color_node.correction_method = 'OFFSET_POWER_SLOPE'      
+            #create alpha over node      
+            alpha_over_node = image_merge_group.nodes.new(type="CompositorNodeAlphaOver")
+            alpha_over_node.location = 600, 200
+            alpha_over_node.use_premultiply = True               
+            #bring it all together
+            image_merge_group.links.new(color_node.outputs[0], alpha_over_node.inputs[2])
+            image_merge_group.links.new(group_inputs.outputs["Background"], alpha_over_node.inputs[1])
+            image_merge_group.links.new(group_inputs.outputs["Foreground"], color_node.inputs[1])
+            image_merge_group.links.new(alpha_over_node.outputs[0], group_outputs.inputs['Image'])
 
-        if color_node is None:
-            color_node = tree.nodes.new(type='CompositorNodeColorBalance')
-            color_node.label = node_label
-            color_node.name = node_label
-            
-        color_node.correction_method = 'OFFSET_POWER_SLOPE'
+        color_node = image_merge_group.nodes.get("Color Balance")
         color_node.offset = context.scene.min_color
         color_node.slope = context.scene.max_color - context.scene.min_color
         
-        image_node_label = "Selected Background Image" 
-        image_node = tree.nodes.get(image_node_label)
+        tree = bpy.context.scene.node_tree
+        group_node = tree.nodes.get("Image Merge: " + context.edit_image.name)
         
-        #create image texture node
-        if image_node is None:
-            image_node = tree.nodes.new(type="CompositorNodeImage")
-            image_node.name = image_node_label
-            image_node.label = image_node_label
-            image_node.location = 100, 400
-        
-        image_node.image = bpy.data.images[context.edit_image.name]
-        
-        #create alpha over node
-        alpha_over_node_label = "BG/Render Alpha Over" 
-        alpha_over_node = tree.nodes.get(alpha_over_node_label)
-        
-        if alpha_over_node is None:
-            alpha_over_node = tree.nodes.new(type="CompositorNodeAlphaOver")
-            alpha_over_node.name = alpha_over_node_label
-            alpha_over_node.label = alpha_over_node_label
-            alpha_over_node.location = 600, 200
-            alpha_over_node.use_premultiply = True
-            
-        #create/get composite node
-        comp_node = tree.nodes.get("Composite")
-        
-        if comp_node is None:
-            comp_node = tree.nodes.new(type="CompositorNodeComposite")
-            comp_node.location = 1000, 150
-            
-        #bring it all together
-        tree.links.new(image_node.outputs[0], alpha_over_node.inputs[1])
-        tree.links.new(color_node.outputs[0], alpha_over_node.inputs[2])
-        tree.links.new(alpha_over_node.outputs[0], comp_node.inputs[0])
+        if group_node is None:
+            group_node = tree.nodes.new("CompositorNodeGroup")
+            group_node.node_tree = image_merge_group
+            group_node.name = "Image Merge: " + context.edit_image.name
         
         #switch views
         context.area.type = 'NODE_EDITOR'
