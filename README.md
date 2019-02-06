@@ -14,4 +14,4 @@ This is useful for when you need a black or white value of a certain area.  Some
 This is for your color picker, in case you accidentally pick an area that will throw off your black or white values.  This resets your min color to absolute white, and your max color to absolute black.
 
 ## Add to Compositor
-Adds a color balance node to your compositor, applying the black and white values you just calculated or picked!
+Adds a color matching node group to your compositor, applying the black and white values you just calculated or picked!
