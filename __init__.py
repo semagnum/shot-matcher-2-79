@@ -81,6 +81,10 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
         return context.edit_image is not None and context.scene.use_nodes
     
     def execute(self, context):
+      
+        if context.scene.max_color[0] <= context.scene.min_color[0] or context.scene.max_color[1] <= context.scene.min_color[1] or context.scene.max_color[2] <= context.scene.min_color[2]:
+            self.report({'ERROR'}, "The white color is less than or equal to the black color")
+            return {'FINISHED'}
         
         # create a group
         image_merge_group = bpy.data.node_groups.get("Image Merge: " + context.edit_image.name)
@@ -141,7 +145,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
         
         context.window.cursor_set("EYEDROPPER")
 
-        context.area.header_text_set("Ctrl + Mouse: pick max/min colors, LMB/RMB: finish and apply, ESC: cancel")
+        context.area.header_text_set("Ctrl + Mouse: pick white/black colors, LMB/RMB: finish and apply, ESC: cancel")
         
         if event.type == 'MOUSEMOVE':
             if event.ctrl:
@@ -207,14 +211,14 @@ class CMP_PT_color_matching(bpy.types.Panel):
     def draw(self, context):
         
         layout = self.layout
-        layout.prop(context.scene, "max_color", text='Max Color')
+        layout.prop(context.scene, "max_color", text='White Color')
         #layout.prop(context.scene, "midtone_color", text='Midtone Color')
-        layout.prop(context.scene, "min_color", text='Min Color')
+        layout.prop(context.scene, "min_color", text='Black Color')
         
         row = layout.row()
-        row.operator(CMC_OT_image_calculator.bl_idname, text = 'Calculate Picture', icon='SEQ_HISTOGRAM')
+        row.operator(CMC_OT_image_calculator.bl_idname, text = 'Calculate Min/Max', icon='SEQ_HISTOGRAM')
         row = layout.row()
-        row.operator(CMP_OT_color_picker.bl_idname, text = 'Max/Min Color Picker', icon='EYEDROPPER')
+        row.operator(CMP_OT_color_picker.bl_idname, text = 'Black/White Color Picker', icon='EYEDROPPER')
         row.operator(CMR_OT_color_reset.bl_idname, text = 'Reset Color Picker', icon='IMAGE_ALPHA')
         layout.operator(CMN_OT_add_color_matching_node.bl_idname, text = 'Add to Compositor', icon='NODETREE')
         
