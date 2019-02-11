@@ -2,7 +2,7 @@ bl_info = {
     "name": "Color Matching Analyzer",
     "author": "Spencer Magnusson",
     "version": (1, 0),
-    "blender": (2, 79, 0),
+    "blender": (2, 80, 0),
     "description": "Analyzes colors of an image and applies it to the compositing tree.",
     "warning": "",
     "wiki_url": "",
@@ -78,9 +78,10 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return context.edit_image is not None and context.scene.use_nodes
+        return context.edit_image is not None
     
     def execute(self, context):
+        context.scene.use_nodes = True
       
         if context.scene.max_color[0] <= context.scene.min_color[0] or context.scene.max_color[1] <= context.scene.min_color[1] or context.scene.max_color[2] <= context.scene.min_color[2]:
             self.report({'ERROR'}, "The white color is less than or equal to the black color")
@@ -175,16 +176,19 @@ class CMP_OT_color_picker(bpy.types.Operator):
                     self.min_b = pixels[2]        
         elif event.type in {'RIGHTMOUSE', 'LEFTMOUSE'}:
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
-            context.scene.max_color = (self.max_r, self.max_g, self.max_b)
-            context.area.header_text_set()
+            context.scene.max_color = (self.max_r, self.max_g, self.max_b)       
+            context.area.header_text_set("")
+            context.area.tag_redraw()
             context.window.cursor_set("DEFAULT")
             return {'FINISHED'}
         elif event.type == 'ESC':
             context.window.cursor_set("DEFAULT")
-            context.area.header_text_set()
+            context.area.header_text_set("")
             return {'FINISHED'}
+        elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
+            return {'PASS_THROUGH'}
         
-        return {'PASS_THROUGH'}
+        return {'RUNNING_MODAL'}
     
     def invoke(self, context, event):
         self.min_r = context.scene.min_color[0]
