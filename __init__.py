@@ -144,13 +144,12 @@ class CMP_OT_color_picker(bpy.types.Operator):
 
     def modal(self, context, event):
         
-        context.window.cursor_set("EYEDROPPER")
-
+        context.window.cursor_set("EYEDROPPER")   
+    
         context.area.header_text_set("Ctrl + Mouse: pick white/black colors, LMB/RMB: finish and apply, ESC: cancel")
         
         if event.type == 'MOUSEMOVE':
             if event.ctrl:
-                print("pick")
                 mouse_x = event.mouse_x - context.region.x
                 mouse_y = event.mouse_y - context.region.y
                 uv = context.area.regions[-1].view2d.region_to_view(mouse_x, mouse_y)
@@ -176,14 +175,13 @@ class CMP_OT_color_picker(bpy.types.Operator):
                     self.min_b = pixels[2]        
         elif event.type in {'RIGHTMOUSE', 'LEFTMOUSE'}:
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
-            context.scene.max_color = (self.max_r, self.max_g, self.max_b)       
-            context.area.header_text_set("")
-            context.area.tag_redraw()
+            context.scene.max_color = (self.max_r, self.max_g, self.max_b)   
+            context.area.header_text_set()
             context.window.cursor_set("DEFAULT")
             return {'FINISHED'}
         elif event.type == 'ESC':
             context.window.cursor_set("DEFAULT")
-            context.area.header_text_set("")
+            context.area.header_text_set()
             return {'FINISHED'}
         elif event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
             return {'PASS_THROUGH'}
