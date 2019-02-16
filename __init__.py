@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Color Matching Analyzer",
     "author": "Spencer Magnusson",
-    "version": (1, 0),
+    "version": (1, 0, 1),
     "blender": (2, 79, 0),
     "description": "Analyzes colors of an image and applies it to the compositing tree.",
     "warning": "",
@@ -32,7 +32,7 @@ class CMC_OT_image_calculator(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return context.edit_image is not None
+        return context.edit_image is not None and context.edit_image.pixels
     
     def execute(self, context):
         
@@ -75,10 +75,6 @@ class CMN_OT_add_color_matching_node(bpy.types.Operator):
     bl_idname = "node.cmn_ot_add_color_matching_node"
     bl_label = "Add Min/Max Color Balance to Compositor"
     bl_options = {'REGISTER'}
-    
-    @classmethod
-    def poll(cls, context):
-        return context.edit_image is not None
     
     def execute(self, context):
         context.scene.use_nodes = True
@@ -140,7 +136,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        return context.edit_image is not None
+        return context.edit_image is not None and context.edit_image.pixels
 
     def modal(self, context, event):
         
@@ -175,7 +171,7 @@ class CMP_OT_color_picker(bpy.types.Operator):
                     self.min_b = pixels[2]        
         elif event.type in {'RIGHTMOUSE', 'LEFTMOUSE'}:
             context.scene.min_color = (self.min_r, self.min_g, self.min_b)
-            context.scene.max_color = (self.max_r, self.max_g, self.max_b)   
+            context.scene.max_color = (self.max_r, self.max_g, self.max_b)
             context.area.header_text_set()
             context.window.cursor_set("DEFAULT")
             return {'FINISHED'}
