@@ -1,4 +1,4 @@
-# Blender Color Matching Addon
+# Color Matching Analyzer
 
 The purpose of this addon is to speed up the compositing workflow with color matching analysis and calculating.  This can then be implemented into the compositor.  All the controls for this addon can be found in the UV editor window on the right shelf (click "n" if the shelf isn't visible).
 
