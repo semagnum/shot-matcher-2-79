@@ -10,7 +10,7 @@ class CMA_PT_image_analyzer(bpy.types.Panel):
     bl_idname = "color_matching_analyzer.image_analyzer"
     bl_space_type = 'IMAGE_EDITOR'
     bl_label = "Image Analyzer"
-    bl_category = "Shot Matching"
+    bl_category = "Shot Matcher"
     bl_region_type = 'UI'
     
     def draw(self, context):
