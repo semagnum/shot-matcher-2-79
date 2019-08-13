@@ -6,8 +6,8 @@ import bpy
 class CMA_PT_video_analyzer(bpy.types.Panel):
     bl_idname = "color_matching_analyzer.video_analyzer"
     bl_space_type = 'CLIP_EDITOR'
-    bl_label = "Movie Clip Analyzer"
-    bl_category = "Shot Matcher"
+    bl_label = "Color Matching Analyzer"
+    bl_category = "Color Matching Analyzer"
     bl_region_type = 'TOOLS'
     
     def draw(self, context):
