@@ -1,4 +1,4 @@
-# Color Matching Analyzer
+# Shot Matcher
 
 The purpose of this addon is to speed up the compositing workflow with color matching analysis.  This can then be implemented into the compositor.  The controls for this addon can be found in the UV/Image editor window on the right shelf (click "n" if the shelf isn't visible), or on the left shelf of the Movie Clip editor.
 

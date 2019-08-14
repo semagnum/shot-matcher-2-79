@@ -6,15 +6,15 @@ import bpy
 class CMA_PT_video_analyzer(bpy.types.Panel):
     bl_idname = "color_matching_analyzer.video_analyzer"
     bl_space_type = 'CLIP_EDITOR'
-    bl_label = "Color Matching Analyzer"
-    bl_category = "Color Matching Analyzer"
+    bl_label = "Movie Clip Analyzer"
+    bl_category = "Shot Matcher"
     bl_region_type = 'TOOLS'
     
     def draw(self, context):
 
         layout = self.layout
 
-        layout.operator(CMA_OT_video_calculator.bl_idname, text = 'Calculate', icon='SEQ_HISTOGRAM')
+        layout.operator(CMA_OT_video_calculator.bl_idname, text = 'Calculate Colors', icon='SEQ_HISTOGRAM')
         layout.operator(CMA_OT_add_video_node.bl_idname, text = 'Apply in Compositor', icon='NODETREE')
         
         layout.prop(context.scene, "max_color", text='White Color')
