@@ -6,7 +6,7 @@ semagnum+blendermarket@gmail.com
 '''
 
 bl_info = {
-    "name": "Color Matching Analyzer",
+    "name": "Shot Matcher",
     "author": "Spencer Magnusson",
     "version": (2, 1, 0),
     "blender": (2, 79, 0),
