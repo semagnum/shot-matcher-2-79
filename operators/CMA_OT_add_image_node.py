@@ -33,9 +33,4 @@ class CMA_OT_add_image_node(bpy.types.Operator):
             image_node.location = -300, 0
             tree.links.new(image_node.outputs[0], group_node.inputs[0])
         
-        #switch views
-        context.area.type = 'NODE_EDITOR'
-        context.space_data.tree_type = 'CompositorNodeTree'
-
-        
         return {'FINISHED'}
