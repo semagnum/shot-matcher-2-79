@@ -24,4 +24,4 @@ class CMA_PT_video_analyzer(bpy.types.Panel):
         col.label(text="Frame Range:")
         col.prop(context.scene, "cma_start_frame", text='Start Frame')
         col.prop(context.scene, "cma_end_frame", text='End Frame')
-        col.prop(context.scene, "cma_frame_step", text='Frame Step')       
+        col.prop(context.scene, "cma_frame_step", text='Frame Step')
