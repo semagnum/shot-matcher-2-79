@@ -1,6 +1,5 @@
 import bpy
-from ..utils import frame_analyze, get_layer_settings
-from ..LayerSettings import LayerSettings
+from ..utils import frame_analyze, get_layer_settings, get_layer_name
 
 class SM_OT_video_calculator(bpy.types.Operator):
     bl_idname = 'shot_matcher.video_calculator'
@@ -10,11 +9,11 @@ class SM_OT_video_calculator(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return get_layer_settings(context).layer_name in bpy.data.movieclips
+        return get_layer_name(context) in bpy.data.movieclips
     
     def execute(self, context):
         context_layer = get_layer_settings(context)
-        movie_clip = bpy.data.movieclips[context_layer.layer_name]
+        movie_clip = bpy.data.movieclips[get_layer_name(context)]
 
         if context_layer.start_frame < movie_clip.frame_start or context_layer.end_frame > movie_clip.frame_duration or context_layer.start_frame > context_layer.end_frame:
             self.report({'ERROR'}, 'Invalid frame range: it must be within the frame range of the video clip')
@@ -40,8 +39,9 @@ class SM_OT_video_calculator(bpy.types.Operator):
         for space in viewer_area.spaces:
             if space.type == 'IMAGE_EDITOR':
                 viewer_space = space
-
-        viewer_space.image = bpy.data.images.load(movie_clip.filepath)
+        
+        movie_image = bpy.data.images.load(movie_clip.filepath)
+        viewer_space.image = movie_image
 
         #the frame_offset property starts at 0 index, so first frame is actually 0
         frame = context_layer.start_frame - 1
@@ -50,14 +50,14 @@ class SM_OT_video_calculator(bpy.types.Operator):
             #switch back and forth to force refresh
             viewer_space.draw_channels = 'COLOR'
             viewer_space.draw_channels = 'COLOR_ALPHA'
-            frame_analyze(context, viewer_space.image, (frame == context_layer.start_frame - 1))
-            self.report({'INFO'}, 'Analyzing frame {}'.format(frame + 1))
+            frame_analyze(context, movie_image, (frame == context_layer.start_frame - 1))
+            self.report({'INFO'}, 'Shot Matcher: Analyzing frame {} for {}'.format(frame + 1, movie_image.name))
 
-        viewer_space.image.user_clear()
-        bpy.data.images.remove(viewer_space.image)        
-        
         context.window.cursor_set('DEFAULT')
+        viewer_space.image = None
         if previousAreaType is not None:
             viewer_area.type = previousAreaType
+            
+        bpy.data.images.remove(movie_image)
         
         return {'FINISHED'}
