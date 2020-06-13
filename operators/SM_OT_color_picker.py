@@ -60,6 +60,7 @@ class SM_OT_color_picker(bpy.types.Operator):
                 context_layer.min_color[1] = pixels[1]
             if pixels[2] < context_layer.min_color[2]:
                 context_layer.min_color[2] = pixels[2]
+            context.area.tag_redraw()
         
         return {'RUNNING_MODAL'}
     
